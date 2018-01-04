@@ -1,0 +1,1 @@
+{"products":[{"id":"0","catid":"0","name":"Dell 1000","price":"500","quantity":1}],"user":{"customer_id":10,"name":"Markus Torres","street":"Bornholmer Strasse 36","city":"10867 Koeln"},"payment_method":"4"}
