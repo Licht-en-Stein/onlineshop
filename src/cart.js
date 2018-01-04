@@ -87,7 +87,7 @@ class Cart {
     return this;
   }
   clear() {
-    localStorage.clear();
+    localStorage.removeItem('cart');
     this.cart.products = [];
     this.update();
     return this;

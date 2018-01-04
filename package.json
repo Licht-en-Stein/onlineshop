@@ -9,8 +9,8 @@
     "start": "neutrino start",
     "start-express": "node src/server/app.js",
     "start-express-dev": "nodemon src/server/app.js",
-    "dump-database": "mysqldump -unacho -p online_shop > ./database/online_shop.sql",
-    "import-database": "mysql -unacho -p online_shop < ./database/online_shop.sql"
+    "dump-database": "mysqldump -uroot -p online_shop > ./database/online_shop.sql",
+    "import-database": "mysql -uroot -p online_shop < ./database/online_shop.sql"
   },
   "repository": {
     "type": "git",
@@ -35,6 +35,7 @@
     "jquery": "^3.2.1",
     "mysql": "^2.15.0",
     "node-sass": "^4.7.2",
+    "nodemailer": "^4.4.1",
     "popper.js": "^1.13.0",
     "webpack": "^2.7.0"
   }

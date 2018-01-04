@@ -17,15 +17,144 @@ $(() => {
     .append(navbarTemplate)
     .append($pageContent);
 
+  $('.shopping-cart, #cart').hide();
+
   function handleAJAXError(xhr, status, error) {
     $pageContent
       .empty()
       .append(`<div>Ajax Error categories: ${error}</div>`);
   }
 
+  $('.login-nav').hide();
+  $('.register-nav').hide();
+  const loggedUser = JSON.parse(localStorage.getItem('user'));
+  if (loggedUser === null) {
+    $('#user').hide();
+    $('#logout').hide();
+  } else {
+    $('#login').hide();
+    $('#register').hide();
+    $('.user-logged').text(` ${loggedUser.firstname}`);
+  }
+
+  $('#login').click((e) => {
+    e.preventDefault();
+    $('.login-nav').toggle('slow');
+    if ($('.register-nav').is(':visible')) {
+      $('.register-nav').hide();
+    }
+    $('#inputEmail').focus();
+  });
+
+  $('.info-log').click((e) => {
+    e.preventDefault();
+    $('.register-nav').toggle('slow');
+    if ($('.login-nav').is(':visible')) {
+      $('.login-nav').hide();
+    }
+    $('#inputEmail').focus();
+  });
+
+  $('#logout').click(() => {
+    localStorage.removeItem('user');
+    $('#logout').hide();
+    $('#user').hide();
+    $('#login').show();
+    $('#register').show();
+  });
+
+  $('.form-signin').on('submit', ((e) => {
+    // Add a random active user ID
+
+    // Select an active user by his id and storage the data as an object in the localStorage
+
+    function selectActiveUser(id) {
+      $.ajax(`http://localhost:9090/api/customers/${id}`)
+        .done((user) => {
+          const userInfo = {
+            id: user[0].id,
+            firstname: user[0].firstname,
+            lastname: user[0].lastname,
+            email: user[0].email,
+            phone: user[0].phone,
+            city: user[0].city,
+            postal: user[0].postal,
+            street: user[0].street,
+          };
+          localStorage.setItem('user', JSON.stringify(userInfo));
+          const signedUser = JSON.parse(localStorage.getItem('user'));
+          e.preventDefault();
+          $('.login-nav').hide();
+          $('#login').hide();
+          $('#register').hide();
+          $('#user').show();
+          $('#logout').show();
+          $('.user-logged').text(` ${signedUser.firstname}`);
+        });
+    }
+    // make a query for all the active users in our shop
+    $.ajax('http://localhost:9090/api/activecustomers')
+      .done((userIDs) => {
+        const arrayIDs = [];
+        userIDs.forEach((id) => {
+          arrayIDs.push(id);
+        });
+        const activeUserID = [];
+        for (let i = 0; i < arrayIDs.length; i += 1) {
+          activeUserID.push(arrayIDs[i].id);
+        }
+        const max = activeUserID.length - 1;
+        const userID = Math.floor(Math.random() * max);
+        // selected one user with a random math of its id
+        selectActiveUser(activeUserID[userID]);
+      });
+    // End
+  }));
+
+  $('.form-register').on('submit', ((e) => {
+    e.preventDefault();
+    localStorage.removeItem('user');
+    const user = {};
+    user.firstname = $('.form-register #firtsname').val();
+    user.lastname = $('.form-register #lastname').val();
+    user.birthdate = $('.form-register #birthdate').val();
+    user.phone = $('.form-register #phone').val();
+    user.city = $('.form-register #city').val();
+    user.street = $('.form-register #street').val();
+    user.postal = $('.form-register #postal').val();
+    user.email = $('.form-register #email').val();
+    localStorage.setItem('user', JSON.stringify(user));
+    $('.register-nav').hide();
+    $('#login').hide();
+    $('.user-logged').text(user.firstname).show();
+    $('.user-register').hide();
+    $('#logout').show();
+  }));
+
+  $('#register').click((e) => {
+    e.preventDefault();
+    $('.register-nav').toggle('slow');
+    if ($('.login-nav').is(':visible')) {
+      $('.login-nav').hide();
+    }
+    $('#firstname').focus();
+  });
+
+  $('.info-reg').click((e) => {
+    e.preventDefault();
+    $('.login-nav').toggle('slow');
+    if ($('.register-nav').is(':visible')) {
+      $('.register-nav').hide();
+    }
+    $('#inputEmail').focus();
+  });
+
   $('#cart').click(((e) => {
     e.preventDefault();
-    $('.shopping-cart').toggle('slow', (() => {}));
+    $('.shopping-cart').toggle('slow');
+    if ($('.login-nav').is(':visible')) {
+      $('.login-nav').hide();
+    }
   }));
 
   // checkout method
@@ -40,10 +169,10 @@ $(() => {
     const $productsList = $checkout.find('.products-list');
     storedProducts.forEach((product) => {
       $productsList.append(`<li>
-    <span class="product-name">${product.name}</span>
-    <span class="product-price">${product.price}</span>
-    <span class="product-quantity">${product.quantity}</span>
-    </li>`);
+            <span class="product-name">${product.name}</span>
+            <span class="product-price">${product.price}</span>
+            <span class="product-quantity">${product.quantity}</span>
+            </li>`);
     });
     const totalPrice = JSON.parse(localStorage.getItem('totalPrice'));
     $checkout.find('.cart-total').text(`Total ${totalPrice}`);
@@ -51,6 +180,39 @@ $(() => {
     $('.page-content')
       .empty()
       .append($checkout);
+
+    $checkout.find('.checkout-buy').click((evt) => {
+      evt.preventDefault();
+      const data = JSON.stringify({
+        products: storedProducts,
+        user: {
+          customer_id: userData.id,
+          user_email: userData.email,
+          name: $checkout.find('[name="user-name"]').val(),
+          street: $checkout.find('[name="user-street"]').val(),
+          city: $checkout.find('[name="user-city"]').val(),
+        },
+        payment_method: $checkout.find('[name="payment"]:checked').val(),
+        total_price: totalPrice,
+      });
+      $.ajax('http://localhost:9090/api/order', {
+        method: 'POST',
+        contentType: 'application/json',
+        data,
+      })
+        // eslint-disable-next-line
+        .done(() => {
+          $checkout
+            .empty()
+            .append(`
+            <div class="alert alert-success" role="alert">
+            This is a success alert—check it out!
+            </div>`);
+        })
+        // eslint-disable-next-line
+        .fail((...args) => console.info('error', ...args));
+    });
+
 
     const $paymentMethods = $checkout
       .find('.payment-methods')
@@ -69,11 +231,9 @@ $(() => {
       })
       .fail(handleAJAXError);
     // loading products
-
-    $('.shopping-cart').hide();
   });
 
-  $pageContent.css(('padding-top'), $('.navbar').outerHeight());
+  // $pageContent.css(('padding-top'), $('.navbar').outerHeight());
 
   //  read categories
   $.ajax('http://localhost:9090/api/categories')
@@ -120,40 +280,42 @@ $(() => {
   // Add a random active user ID
 
   // Select an active user by his id and storage the data as an object in the localStorage
-  function selectActiveUser(id) {
-    $.ajax(`http://localhost:9090/api/customers/${id}`)
-      .done((user) => {
-        const userInfo = {
-          id: user[0].id,
-          firstname: user[0].firstname,
-          lastname: user[0].lastname,
-          email: user[0].email,
-          phone: user[0].phone,
-          city: user[0].city,
-          postal: user[0].postal,
-          street: user[0].street,
-        };
-        localStorage.setItem('User', JSON.stringify(userInfo));
-      });
-  }
+  /*
+    function selectActiveUser(id) {
+      $.ajax(`http://localhost:9090/api/customers/${id}`)
+        .done((user) => {
+          const userInfo = {
+            id: user[0].id,
+            firstname: user[0].firstname,
+            lastname: user[0].lastname,
+            email: user[0].email,
+            phone: user[0].phone,
+            city: user[0].city,
+            postal: user[0].postal,
+            street: user[0].street,
+          };
+          localStorage.setItem('User', JSON.stringify(userInfo));
+        });
+    }
 
-  // make a query for all the active users in our shop
-  $.ajax('http://localhost:9090/api/activecustomers')
-    .done((userIDs) => {
-      const arrayIDs = [];
-      userIDs.forEach((id) => {
-        arrayIDs.push(id);
+    // make a query for all the active users in our shop
+    $.ajax('http://localhost:9090/api/activecustomers')
+      .done((userIDs) => {
+        const arrayIDs = [];
+        userIDs.forEach((id) => {
+          arrayIDs.push(id);
+        });
+        const activeUserID = [];
+        for (let i = 0; i < arrayIDs.length; i += 1) {
+          activeUserID.push(arrayIDs[i].id);
+        }
+        const max = activeUserID.length - 1;
+        const userID = Math.floor(Math.random() * max);
+        // selected one user with a random math of its id
+        selectActiveUser(activeUserID[userID]);
       });
-      const activeUserID = [];
-      for (let i = 0; i < arrayIDs.length; i += 1) {
-        activeUserID.push(arrayIDs[i].id);
-      }
-      const max = activeUserID.length - 1;
-      const userID = Math.floor(Math.random() * max);
-      // selected one user with a random math of its id
-      selectActiveUser(activeUserID[userID]);
-    });
 
-  localStorage.removeItem('User');
-  // End
+    localStorage.removeItem('User');
+    // End
+    */
 });
