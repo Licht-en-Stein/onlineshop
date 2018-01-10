@@ -39,6 +39,9 @@ $(() => {
 
   $('#login').click((e) => {
     e.preventDefault();
+    // default userdata
+    $('#log-email').val('smtpcrimson@gmail.com1');
+    $('#inputPassword').val('halloworld');
     $('.login-nav').toggle('slow');
     if ($('.register-nav').is(':visible')) {
       $('.register-nav').hide();
@@ -63,53 +66,76 @@ $(() => {
     $('#register').show();
   });
 
-  $('.form-signin').on('submit', ((e) => {
-    // Add a random active user ID
+  $('.form-signin').on('submit', (() => {
+    /* eslint-disable */
+    $.ajax('http://localhost:9090/api/login', {
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+          email: $('#log-email').val(),
+          password: $('#inputPassword').val(),
+        }),
+      })
+      .done((msg) => { 
+        console.log(msg)
+        localStorage.setItem('user', JSON.stringify(msg));
 
-    // Select an active user by his id and storage the data as an object in the localStorage
-
-    function selectActiveUser(id) {
-      $.ajax(`http://localhost:9090/api/customers/${id}`)
-        .done((user) => {
-          const userInfo = {
-            id: user[0].id,
-            firstname: user[0].firstname,
-            lastname: user[0].lastname,
-            email: user[0].email,
-            phone: user[0].phone,
-            city: user[0].city,
-            postal: user[0].postal,
-            street: user[0].street,
-          };
-          localStorage.setItem('user', JSON.stringify(userInfo));
-          const signedUser = JSON.parse(localStorage.getItem('user'));
-          e.preventDefault();
-          $('.login-nav').hide();
-          $('#login').hide();
-          $('#register').hide();
-          $('#user').show();
-          $('#logout').show();
-          $('.user-logged').text(` ${signedUser.firstname}`);
-        });
-    }
-    // make a query for all the active users in our shop
-    $.ajax('http://localhost:9090/api/activecustomers')
-      .done((userIDs) => {
-        const arrayIDs = [];
-        userIDs.forEach((id) => {
-          arrayIDs.push(id);
-        });
-        const activeUserID = [];
-        for (let i = 0; i < arrayIDs.length; i += 1) {
-          activeUserID.push(arrayIDs[i].id);
-        }
-        const max = activeUserID.length - 1;
-        const userID = Math.floor(Math.random() * max);
-        // selected one user with a random math of its id
-        selectActiveUser(activeUserID[userID]);
-      });
-    // End
+        const signedUser = JSON.parse(localStorage.getItem('user')); 
+        $('.login-nav').hide();
+        $('#login').hide();
+        $('#register').hide();
+        $('#user').show();
+        $('#logout').show();
+        $('.user-logged').text(` ${signedUser.firstname}`);
+      })
+      .fail(() => {});
   }));
+  /* eslint-enable */
+
+  /*
+      function selectActiveUser(id) {
+        $.ajax(`http://localhost:9090/api/customers/${id}`)
+          .done((user) => {
+            const userInfo = {
+              id: user[0].id,
+              firstname: user[0].firstname,
+              lastname: user[0].lastname,
+              email: user[0].email,
+              phone: user[0].phone,
+              city: user[0].city,
+              postal: user[0].postal,
+              street: user[0].street,
+            };
+            localStorage.setItem('user', JSON.stringify(userInfo));
+            const signedUser = JSON.parse(localStorage.getItem('user'));
+            e.preventDefault();
+            $('.login-nav').hide();
+            $('#login').hide();
+            $('#register').hide();
+            $('#user').show();
+            $('#logout').show();
+            $('.user-logged').text(` ${signedUser.firstname}`);
+          });
+      }
+      // make a query for all the active users in our shop
+      $.ajax('http://localhost:9090/api/activecustomers')
+        .done((userIDs) => {
+          const arrayIDs = [];
+          userIDs.forEach((id) => {
+            arrayIDs.push(id);
+          });
+          const activeUserID = [];
+          for (let i = 0; i < arrayIDs.length; i += 1) {
+            activeUserID.push(arrayIDs[i].id);
+          }
+          const max = activeUserID.length - 1;
+          const userID = Math.floor(Math.random() * max);
+          // selected one user with a random math of its id
+          selectActiveUser(activeUserID[userID]);
+        });
+      // End
+      */
+
 
   $('.form-register').on('submit', ((e) => {
     e.preventDefault();
@@ -159,12 +185,12 @@ $(() => {
 
   // checkout method
   $('.checkout-proceed').click(() => {
-    const userData = JSON.parse(localStorage.getItem('User'));
+    const userData = JSON.parse(localStorage.getItem('user'));
     const $checkout = $(checkoutTemplate);
     $checkout.find('[name="user-name"]').val(`${userData.firstname} ${userData.lastname}`);
     $checkout.find('[name="user-street"]').val(userData.street);
     $checkout.find('[name="user-city"]').val(`${userData.postal} ${userData.city}`);
-
+    $('.shopping-cart').hide();
     const storedProducts = JSON.parse(localStorage.getItem('cart'));
     const $productsList = $checkout.find('.products-list');
     storedProducts.forEach((product) => {
@@ -174,6 +200,7 @@ $(() => {
             <span class="product-quantity">${product.quantity}</span>
             </li>`);
     });
+
     const totalPrice = JSON.parse(localStorage.getItem('totalPrice'));
     $checkout.find('.cart-total').text(`Total ${totalPrice}`);
 
@@ -195,12 +222,14 @@ $(() => {
         payment_method: $checkout.find('[name="payment"]:checked').val(),
         total_price: totalPrice,
       });
+
+      /* eslint-disable */
       $.ajax('http://localhost:9090/api/order', {
-        method: 'POST',
-        contentType: 'application/json',
-        data,
-      })
-        // eslint-disable-next-line
+          method: 'POST',
+          contentType: 'application/json',
+          data,
+        })
+        /* eslint-enable */
         .done(() => {
           $checkout
             .empty()

@@ -7,14 +7,33 @@ const bodyParser = require('body-parser');
 const app = express();
 const Router = express.Router;
 const mailnotifier = require('./mailnotifier');
-
+const jwt = require('jsonwebtoken');
+const serverSignature = 'Secret Server Signature';
 const port = 9090;
+
+let osFolder = process.env.HOME + '/.online_shop';
+let shopConfig = null;
+if (!fs.existsSync(osFolder)) {
+  fs.mkdirSync(osFolder);
+  let initialConfig = {
+    mysql_user: '',
+    mysql_db: '',
+    mysql_pwd: '',
+    mailnotifications: 0,
+  }
+  fs.writeFileSync(osFolder + '/.config.json', JSON.stringify(initialConfig));
+  console.log('The config folder does not exist, it has been created now. The server will exit now');
+  process.exit();
+
+} else {
+  shopConfig = require(osFolder + '/.config.json');
+}
 
 const con = mysql.createConnection({
   host: 'localhost',
-  user: 'root',
-  password: 'whoop',
-  database: 'online_shop'
+  user: shopConfig.mysql_user,
+  password: shopConfig.mysql_pwd,
+  database: shopConfig.mysql_db,
 });
 
 const frontendDirectoryPath = path.resolve(__dirname, './../static');
@@ -41,7 +60,39 @@ apiRouter.get('/', (req, res) => {
   res.send({ 'shop-api': '1.0' });
 });
 
-///Conect to MySQL
+// login token
+
+apiRouter.post('/login', (req, res) => {
+  if (!req.body.email || !req.body.password) {
+    return res.json({ err: 'Mail and password required' });
+  }
+  con.query('select * from customers where email = ? and pwd = ?', [req.body.email, req.body.password], (err, rows) => {
+    if (err) {
+      return res.json({ err: 'Internal error occured' });
+    }
+    if (rows.length > 0) {
+      console.log(rows[0]);
+      const token = jwt.sign({ email: rows[0].email, pwd: rows[0].pwd }, serverSignature);
+      return res.json({
+        id: rows[0].id,
+        firstname: rows[0].firstname,
+        lastname: rows[0].lastname,
+        email: rows[0].email,
+        phone: rows[0].phone,
+        city: rows[0].city,
+        postal: rows[0].postal,
+        street: rows[0].street,
+        token: token,
+      });
+    } else {
+      return res.json({ err: 'Username/Passowrd does not exist' });
+    }
+  });
+});
+
+///////
+
+// Conect to MySQL
 apiRouter.get('/products', (req, res) => {
   con.query('select * from products', (err, rows) => {
     if (err) {
@@ -159,14 +210,16 @@ apiRouter.post('/order', (req, res) => {
         }
 
         con.query(sql, (err, rows) => {
-          let text = `<h1>Dear ${req.body.user.name},</h1>
+          if (shopConfig.mailnotifications === '1') {
+            let text = `<h1>Dear ${req.body.user.name},</h1>
             <p> Thank you very much for ordering over our shop.
             Your final sum of your placed order is ${req.body.total_price}€.
             Cheerio 
             enjoy your products</p>
             `
             const subject = 'Your shopping list';
-          mailnotifier.sendMail(req.body.user.customer_email, subject, text)
+            mailnotifier.sendMail(req.body.user.customer_email, subject, text)
+          }
           return res.json(rows);
         });
       }
