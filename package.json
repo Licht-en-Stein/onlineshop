@@ -14,14 +14,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/LeoDvg/Neutrino-Shop.git"
+    "url": "git+https://github.com/Licht-en-Stein/neutrino-bootstrap.git"
   },
-  "author": "Leandro",
+  "author": "Licht-en-Stein",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/LeoDvg/Neutrino-Shop/issues"
+    "url": "https://github.com/Licht-en-Stein/neutrino-bootstrap/issues"
   },
-  "homepage": "https://github.com/LeoDvg/Neutrino-Shop#readme",
+  "homepage": "https://github.com/Licht-en-Stein/neutrino-bootstrap#readme",
   "devDependencies": {
     "neutrino": "^7.3.3",
     "neutrino-middleware-styles-loader": "0.0.6",
