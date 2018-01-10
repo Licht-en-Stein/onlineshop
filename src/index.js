@@ -68,27 +68,44 @@ $(() => {
 
   $('.form-signin').on('submit', (() => {
     /* eslint-disable */
-    $.ajax('http://localhost:9090/api/login', {
-        method: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify({
-          email: $('#log-email').val(),
-          password: $('#inputPassword').val(),
-        }),
-      })
-      .done((msg) => { 
-        console.log(msg)
-        localStorage.setItem('user', JSON.stringify(msg));
+    const bcrypt = require('bcryptjs');
 
-        const signedUser = JSON.parse(localStorage.getItem('user')); 
-        $('.login-nav').hide();
-        $('#login').hide();
-        $('#register').hide();
-        $('#user').show();
-        $('#logout').show();
-        $('.user-logged').text(` ${signedUser.firstname}`);
-      })
-      .fail(() => {});
+    bcrypt.hash($('#inputPassword').val(), 10, (err, hash) => {
+
+      console.log('hash: ', hash);
+      
+      $.ajax('http://localhost:9090/api/login', {
+          method: 'POST',
+          contentType: 'application/json',
+          data: JSON.stringify({
+            email: $('#log-email').val(),
+            password: hash,
+          }),
+        })
+        .done((msg) => {
+          console.log(msg);
+          console.log(msg.err);
+
+          if (msg.err === undefined) {
+            localStorage.setItem('user', JSON.stringify(msg));
+            const signedUser = JSON.parse(localStorage.getItem('user'));
+            $('.login-nav').hide();
+            $('#login').hide();
+            $('#register').hide();
+            $('#user').show();
+            $('#logout').show();
+            $('.user-logged').text(` ${signedUser.firstname}`);
+          } else {
+            $('.alert-danger').remove();
+            $('.login-nav').append(`
+              <div class="alert alert-danger" role="alert">
+              ${msg.err}
+              </div>
+              `)
+          }
+        })
+        .fail(() => {});
+    });
   }));
   /* eslint-enable */
 

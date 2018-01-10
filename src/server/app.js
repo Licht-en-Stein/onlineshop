@@ -9,6 +9,7 @@ const Router = express.Router;
 const mailnotifier = require('./mailnotifier');
 const jwt = require('jsonwebtoken');
 const serverSignature = 'Secret Server Signature';
+const bcrypt = require('bcryptjs');
 const port = 9090;
 
 let osFolder = process.env.HOME + '/.online_shop';
@@ -66,12 +67,13 @@ apiRouter.post('/login', (req, res) => {
   if (!req.body.email || !req.body.password) {
     return res.json({ err: 'Mail and password required' });
   }
-  con.query('select * from customers where email = ? and pwd = ?', [req.body.email, req.body.password], (err, rows) => {
+
+  con.query('select * from customers where email = ?', [req.body.email], (err, rows) => {
     if (err) {
       return res.json({ err: 'Internal error occured' });
     }
-    if (rows.length > 0) {
-      console.log(rows[0]);
+    if (rows.length > 0 && bcrypt.compareSync(rows[0].pwd, req.body.password)) {
+     
       const token = jwt.sign({ email: rows[0].email, pwd: rows[0].pwd }, serverSignature);
       return res.json({
         id: rows[0].id,
@@ -84,6 +86,7 @@ apiRouter.post('/login', (req, res) => {
         street: rows[0].street,
         token: token,
       });
+
     } else {
       return res.json({ err: 'Username/Passowrd does not exist' });
     }
