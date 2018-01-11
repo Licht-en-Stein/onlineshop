@@ -94,13 +94,7 @@ nav {
 .shopping-nav {
   margin: 0;
   padding: 0;
-
-  li {
-    margin-right: .5em;
-    a {
-      margin-right: .5em;
-    }
-  }
+  display: inline-block;
 }
 
 .badge {
@@ -318,23 +312,22 @@ nav {
     }
   }
 
-  input[type="email"] {
+  input{
     margin-bottom: .5em;
     border-bottom-right-radius: 0;
     border-bottom-left-radius: 0;
   }
+  /*
   input[type="password"] {
     margin-bottom: 10px;
     border-top-left-radius: 0;
     border-top-right-radius: 0;
   }
+  */
   .btn {
-    width: auto;
+    // width: auto;
     border-radius: 0;
-    margin: 0 auto;
+    margin-bottom: .5em;
   }
-  .info-reg,
-  .info-log {
-    margin-top: 1em;
-  }
+
 }

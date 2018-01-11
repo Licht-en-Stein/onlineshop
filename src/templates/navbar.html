@@ -17,16 +17,16 @@
   <div class="right">
     <ul class="shopping-nav">
       <li>
-        <a href="#" id="login"><i class="fa fa-sign-in" aria-hidden="true"> Login</i></a>
+        <a href="#" id="login"><i class="fa fa-sign-in" aria-hidden="true"></i><span> Login</span></a>
       </li>
       <li>
-        <a href="#" id="register"><i class="fa fa-user" aria-hidden="true"> Register</i></a>
+        <a href="#" id="register"><i class="fa fa-user" aria-hidden="true"></i><span> Register</span></a>
       </li>
       <li>
         <a href="#" id="user"><i class="fa fa-user" aria-hidden="true"></i><span class="user-logged"> User</span></a>
       </li>
       <li>
-        <a href="#" id="logout"><i class="fa fa-sign-out" aria-hidden="true"> Logout</i></a>
+        <a href="#" id="logout"><i class="fa fa-sign-out" aria-hidden="true"></i><span> Logout</span></a>
       </li>
       <li class="cart">
         <a href="#" id="cart" class="cart"><i class="fa fa-shopping-cart"></i> Cart <span class="badge">0</span></a>
@@ -35,17 +35,19 @@
   </div>
 </nav>
 <div class="login-nav">
+  <h4><span>Login</span></h4>
   <form class="form-signin">
     <label for="log-email" class="sr-only">Email address</label>
     <input type="email" id="log-email" class="form-control" placeholder="Email address" required autofocus>
     <label for="inputPassword" class="sr-only">Password</label>
     <input type="password" id="inputPassword" class="form-control" placeholder="Password" required>
-    <button class="btn btn-lg btn-info btn-block" type="submit">Login</button>
+    <button class="btn btn-lg btn-primary btn-block" type="submit">Login</button>
     <a href="#" class="info-log"><i class="fa fa-info-circle" aria-hidden="true"></i> Not registered yet? Sign up here!</a>
   </form>
 </div>
 <div class="register-nav">
   <form class="form-register">
+    <h4><span class="updateInfo">Register</span></h4>
     <label for="firtsname" class="sr-only">Firstname</label>
     <input type="text" id="firtsname" class="form-control" placeholder="Firstname" required autofocus>
     <label for="lastname" class="sr-only">Lastname</label>
@@ -62,7 +64,9 @@
     <input type="text" id="postal" class="form-control" placeholder="Postal" required>
     <label for="reg-email" class="sr-only">Email address</label>
     <input type="email" id="reg-email" class="form-control" placeholder="Email address" required>
-    <button class="btn btn-lg btn-info btn-block" type="submit">Register</button>
+    <label for="inputPassword" class="sr-only">Password</label>
+    <input type="password" minlength="6" id="inputPasswordReg" class="form-control" placeholder="Password" required>
+    <button class="btn btn-lg btn-success btn-block reg" type="submit">Register</button>
     <a href="#" class="info-reg"><i class="fa fa-info-circle" aria-hidden="true"></i> Already registered? Login here!</a>
   </form>
 </div>

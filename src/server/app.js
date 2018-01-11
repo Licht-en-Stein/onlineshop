@@ -61,6 +61,49 @@ apiRouter.get('/', (req, res) => {
   res.send({ 'shop-api': '1.0' });
 });
 
+
+apiRouter.post('/register', (req, res) => {
+  con.query('select email from customers where email = ?', [req.body.email],
+    function(err, rows) {
+      if (err)
+        throw err;
+      if (rows.length > 0) {
+        return res.json({ err: 'The email is already in use.' });
+      } else {
+        con.query('INSERT INTO customers (firstname,lastname,birthdate,phone,city,street,postal,email,pwd) VALUES (?,?,?,?,?,?,?,?,?)', [req.body.firstname,
+            req.body.lastname,
+            req.body.birthdate,
+            req.body.phone,
+            req.body.city,
+            req.body.street,
+            req.body.postal,
+            req.body.email,
+            req.body.password
+          ],
+          (err, rows) => {
+            if (err) {
+              throw err;
+            } else {
+              console.log(rows);
+              res.json({
+
+                id: rows.insertId, 
+                firstname: req.body.firstname,
+                lastname: req.body.lastname,
+                birthdate: req.body.birthdate,
+                phone: req.body.phone,
+                city: req.body.city,
+                street: req.body.street,
+                postal: req.body.postal,
+                email: req.body.email,
+                token: req.body.password,
+              });
+            }
+          });
+      }
+    });
+})
+
 // login token
 
 apiRouter.post('/login', (req, res) => {
@@ -73,12 +116,13 @@ apiRouter.post('/login', (req, res) => {
       return res.json({ err: 'Internal error occured' });
     }
     if (rows.length > 0 && bcrypt.compareSync(rows[0].pwd, req.body.password)) {
-     
+
       const token = jwt.sign({ email: rows[0].email, pwd: rows[0].pwd }, serverSignature);
       return res.json({
         id: rows[0].id,
         firstname: rows[0].firstname,
         lastname: rows[0].lastname,
+        birthdate: rows[0].birthdate,
         email: rows[0].email,
         phone: rows[0].phone,
         city: rows[0].city,
@@ -157,6 +201,7 @@ apiRouter.put('/activate/:userid', (req, res) => {
     });
 });
 // postUser.sh
+/*
 apiRouter.post('/user', (req, res) => {
 
   con.query('select email from customers where email = ?', [req.body.email],
@@ -185,6 +230,8 @@ apiRouter.post('/user', (req, res) => {
       }
     });
 });
+*/
+
 //postOrder.sh
 apiRouter.post('/order', (req, res) => {
   /* 

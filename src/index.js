@@ -9,6 +9,8 @@ import paymentMethodRadioTemplate from './templates/payment-method-radio.html';
 import mkCarousel from './carousel';
 import refreshProducts from './products';
 
+const bcrypt = require('bcryptjs');
+
 //  append navbar
 $(() => {
   const $pageContent = $('<div class="page-content"></div>');
@@ -68,12 +70,8 @@ $(() => {
 
   $('.form-signin').on('submit', (() => {
     /* eslint-disable */
-    const bcrypt = require('bcryptjs');
 
     bcrypt.hash($('#inputPassword').val(), 10, (err, hash) => {
-
-      console.log('hash: ', hash);
-      
       $.ajax('http://localhost:9090/api/login', {
           method: 'POST',
           contentType: 'application/json',
@@ -153,8 +151,46 @@ $(() => {
       // End
       */
 
-
   $('.form-register').on('submit', ((e) => {
+    /* eslint-disable */
+    $.ajax('http://localhost:9090/api/register', {
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+          firstname: $('.form-register #firtsname').val(),
+          lastname: $('.form-register #lastname').val(),
+          birthdate: $('.form-register #birthdate').val(),
+          phone: $('.form-register #phone').val(),
+          city: $('.form-register #city').val(),
+          street: $('.form-register #street').val(),
+          postal: $('.form-register #postal').val(),
+          email: $('.form-register #reg-email').val(),
+          password: $('.form-register #inputPasswordReg').val(),
+        }),
+      })
+      /* eslint-enable */
+      .done((msg) => {
+        if (msg.err === undefined) {
+          localStorage.setItem('user', JSON.stringify(msg));
+          const signedUser = JSON.parse(localStorage.getItem('user'));
+          $('.login-nav').hide();
+          $('#login').hide();
+          $('#register').hide();
+          $('#user').show();
+          $('#logout').show();
+          $('.user-logged').text(` ${signedUser.firstname}`);
+        } else {
+          $('.alert-danger').remove();
+          $('.register-nav').show();
+          $('.register-nav').append(`
+              <div class="alert alert-danger" role="alert">
+              ${msg.err}
+              </div>
+              `);
+        }
+      })
+      .fail(() => {});
+
     e.preventDefault();
     localStorage.removeItem('user');
     const user = {};
@@ -165,7 +201,8 @@ $(() => {
     user.city = $('.form-register #city').val();
     user.street = $('.form-register #street').val();
     user.postal = $('.form-register #postal').val();
-    user.email = $('.form-register #email').val();
+    user.email = $('.form-register #reg-email').val();
+    user.password = $('.form-register #inputPasswordReg').val();
     localStorage.setItem('user', JSON.stringify(user));
     $('.register-nav').hide();
     $('#login').hide();
@@ -176,6 +213,9 @@ $(() => {
 
   $('#register').click((e) => {
     e.preventDefault();
+    //
+    $('.form-register input').val('');
+    //
     $('.register-nav').toggle('slow');
     if ($('.login-nav').is(':visible')) {
       $('.login-nav').hide();
@@ -199,6 +239,23 @@ $(() => {
       $('.login-nav').hide();
     }
   }));
+
+  $('#user').click((e) => {
+    e.preventDefault();
+    $('.register-nav').toggle('slow');
+    const userDataLog = JSON.parse(localStorage.getItem('user'));
+    $('#firtsname').val(userDataLog.firstname);
+    $('#lastname').val(userDataLog.lastname);
+    $('#birthdate').val(userDataLog.birthdate.slice(0, 10));
+    $('#phone').val(userDataLog.phone);
+    $('#city').val(userDataLog.city);
+    $('#street').val(userDataLog.street);
+    $('#postal').val(userDataLog.postal);
+    $('#reg-email').val(userDataLog.email);
+    $('.updateInfo').text('Update Profil');
+    $('.reg').text('Update');
+    $('.info-reg').remove();
+  });
 
   // checkout method
   $('.checkout-proceed').click(() => {
