@@ -1,2 +1,4 @@
 # neutrino+bootstrap+devugees
-A shopping system based on Neutrino.js with Bootstrap for Devugees courses
+A shopping system based on Neutrino NodeJS, MySQL with Bootstrap
+
+https://licht-en-stein.github.io/onlineshop/
