@@ -2,22 +2,19 @@ const nodemailer = require('nodemailer');
 
 function sendMail(recipientAddress, subject, body) {
 
-  // email smtpcrimson@gmail.com
-// password
-
 const smtpConfig = {
   host: 'smtp.gmail.com',
   port: 465,
   secure: true,
   auth: {
-    user: 'smtpcrimson@gmail.com',
-    pass: 'nOOOpooo'
+    user: // 'email',
+    pass: // 'pwd'
   }
 };
 
 const transporter = nodemailer.createTransport(smtpConfig);
 const mailOptions = {
-  from: '"Crimson Lavender" <smtpcrimson@gmail.com>',
+  from: // '"email',
   to: recipientAddress,
   subject: subject,
   text: body,
