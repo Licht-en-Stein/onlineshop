@@ -17,7 +17,7 @@
     "url": "git+https://github.com/Licht-en-Stein/neutrino-bootstrap.git"
   },
   "author": "Licht-en-Stein",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/Licht-en-Stein/neutrino-bootstrap/issues"
   },
